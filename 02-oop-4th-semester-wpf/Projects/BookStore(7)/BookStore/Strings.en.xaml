@@ -1,0 +1,45 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="Title">BOOK STORE</system:String>
+    <system:String x:Key="UserMode">User</system:String>
+    <system:String x:Key="AdminMode">Admin</system:String>
+    <system:String x:Key="SearchPlaceholder">Search books...</system:String>
+    <system:String x:Key="AllCategories">All categories</system:String>
+    <system:String x:Key="Sort">Sort</system:String>
+    <system:String x:Key="PriceAsc">Price: Low to High</system:String>
+    <system:String x:Key="PriceDesc">Price: High to Low</system:String>
+    <system:String x:Key="ByName">By name</system:String>
+    <system:String x:Key="Apply">Apply</system:String>
+    <system:String x:Key="Cart">Cart</system:String>
+    <system:String x:Key="Total">Total:</system:String>
+    <system:String x:Key="Checkout">Checkout</system:String>
+    <system:String x:Key="AddToCart">Add to cart</system:String>
+    <system:String x:Key="Author">Author:</system:String>
+    <system:String x:Key="Category">Category:</system:String>
+    <system:String x:Key="Year">Year:</system:String>
+    <system:String x:Key="Pages">Pages:</system:String>
+    <system:String x:Key="Price">Price:</system:String>
+    <system:String x:Key="Details">Details</system:String>
+    <system:String x:Key="AddBook">Add book</system:String>
+    <system:String x:Key="EditBook">Edit</system:String>
+    <system:String x:Key="DeleteBook">Delete</system:String>
+    <system:String x:Key="Save">Save</system:String>
+    <system:String x:Key="Cancel">Cancel</system:String>
+    <system:String x:Key="AddTitle">Add book</system:String>
+    <system:String x:Key="EditTitle">Edit book</system:String>
+    <system:String x:Key="TitleField">Title:</system:String>
+    <system:String x:Key="AuthorField">Author:</system:String>
+    <system:String x:Key="CategoryField">Category:</system:String>
+    <system:String x:Key="YearField">Year:</system:String>
+    <system:String x:Key="PagesField">Pages:</system:String>
+    <system:String x:Key="PriceField">Price:</system:String>
+    <system:String x:Key="EmptyCart">Cart is empty</system:String>
+    <system:String x:Key="Category_Romans">Novels</system:String>
+    <system:String x:Key="Category_Poetry">Poetry</system:String>
+    <system:String x:Key="Category_Drama">Drama</system:String>
+    <system:String x:Key="Category_Fantasy">Fantasy</system:String>
+    <system:String x:Key="Category_Classic">Classics</system:String>
+
+</ResourceDictionary>

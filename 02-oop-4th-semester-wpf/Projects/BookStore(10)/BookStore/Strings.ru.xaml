@@ -1,0 +1,45 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="Title">КНИЖНЫЙ МАГАЗИН</system:String>
+    <system:String x:Key="UserMode">Пользователь</system:String>
+    <system:String x:Key="AdminMode">Админ</system:String>
+    <system:String x:Key="SearchPlaceholder">Поиск книг...</system:String>
+    <system:String x:Key="AllCategories">Все категории</system:String>
+    <system:String x:Key="Sort">Сортировка</system:String>
+    <system:String x:Key="PriceAsc">По возрастанию цены</system:String>
+    <system:String x:Key="PriceDesc">По убыванию цены</system:String>
+    <system:String x:Key="ByName">По названию</system:String>
+    <system:String x:Key="Apply">Применить</system:String>
+    <system:String x:Key="Cart">Корзина</system:String>
+    <system:String x:Key="Total">Итого:</system:String>
+    <system:String x:Key="Checkout">Оформить заказ</system:String>
+    <system:String x:Key="AddToCart">Добавить в корзину</system:String>
+    <system:String x:Key="Author">Автор:</system:String>
+    <system:String x:Key="Category">Категория:</system:String>
+    <system:String x:Key="Year">Год:</system:String>
+    <system:String x:Key="Pages">Страниц:</system:String>
+    <system:String x:Key="Price">Цена:</system:String>
+    <system:String x:Key="Details">Подробнее</system:String>
+    <system:String x:Key="AddBook">Добавить книгу</system:String>
+    <system:String x:Key="EditBook">Редактировать</system:String>
+    <system:String x:Key="DeleteBook">Удалить</system:String>
+    <system:String x:Key="Save">Сохранить</system:String>
+    <system:String x:Key="Cancel">Отмена</system:String>
+    <system:String x:Key="AddTitle">Добавление книги</system:String>
+    <system:String x:Key="EditTitle">Редактирование книги</system:String>
+    <system:String x:Key="TitleField">Название:</system:String>
+    <system:String x:Key="AuthorField">Автор:</system:String>
+    <system:String x:Key="CategoryField">Категория:</system:String>
+    <system:String x:Key="YearField">Год:</system:String>
+    <system:String x:Key="PagesField">Страниц:</system:String>
+    <system:String x:Key="PriceField">Цена:</system:String>
+    <system:String x:Key="EmptyCart">Корзина пуста</system:String>
+    <system:String x:Key="Category_Romans">Романы</system:String>
+    <system:String x:Key="Category_Poetry">Поэзия</system:String>
+    <system:String x:Key="Category_Drama">Драма</system:String>
+    <system:String x:Key="Category_Fantasy">Фантастика</system:String>
+    <system:String x:Key="Category_Classic">Классика</system:String>
+
+</ResourceDictionary>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Authentication</title>
+</head>
+
+<body>
+    <h1>Module/Celebrities</h1>
+    <div class="row">
+        <span class="col-2">
+            <a href="/" style="margin-left: 10px;"> Home </a>
+            <a href="/Module/Jndex" style="margin-left: 10px;"> Jndex </a>
+        </span>
+        <span class="col-4"></span>
+        <div class="col-5 d-flex justify-content-end">
+            <div id="STATE_N" style="margin-right:2%; display:none;">
+                <button id="NSignIn" type="button"> Sign In</button>
+                <button id="NRegistration" type="button">Registration</button>
+            </div>
+            <div id="STATE_A" style="margin-right: 2%; display:none;">
+                <input type="text" id="AName" readonly />
+                <button id="ASignOut" type="button">Sign Out</button>
+            </div>
+            <div id="STATE_R" style="margin-right: 2%; display:none;">
+                <input id="RName" name="RName" type="text" placeholder="Login" />
+                <input id="RPass" name="RPass" type="password" placeholder="Password" />
+                <button id="RRegistration" type="button">Registration</button>
+                <button id="RCancel" type="button">Cancel</button>
+            </div>
+            <div id="STATE_S" style="margin-right: 2%; display:none;">
+                <input id="SName" name="NName" type="text" placeholder="Login" />
+                <input id="SPass" name="NPass" type="password" placeholder="Password" />
+                <button id="SSignIn" type="button">Sign In</button>
+                <button id="SCancel" type="button">Cancel</button>
+            </div>
+        </div>
+
+        <script type="module">
+            import SAID, { SA, GetUserName, Registration, SignIn, SignOut, STORAGE_KEYS } from './LoginTagHelper.js';
+            
+            const ButtonDissabled = (flag) => {
+                NSignIn.disabled = NRegistration.disabled = flag;
+                RRegistration.disabled = SSignIn.disabled = flag;
+                ASignOut.disabled = flag;
+                RCancel.disabled = SCancel.disabled = flag;
+            }
+            let Visio = (state, name) => {
+                if (state == SA.STATES.A) {
+                    AName.value = name || '';
+                    STATE_N.style.display = STATE_R.style.display = STATE_S.style.display = 'none';
+                    STATE_A.style.display = 'block';
+                } else if (state == SA.STATES.N) {
+                    STATE_A.style.display = STATE_R.style.display = STATE_S.style.display = 'none';
+                    STATE_N.style.display = 'block';
+                } else if (state == SA.STATES.R) {
+                    RName.value = RPass.value = '';
+                    STATE_A.style.display = STATE_N.style.display = STATE_S.style.display = 'none';
+                    STATE_R.style.display = 'block';
+                } else if (state == SA.STATES.S) {
+                    SPass.value = '';
+                    SName.value = name || RName.value || '';
+                    STATE_A.style.display = STATE_N.style.display = STATE_R.style.display = 'none';
+                    STATE_S.style.display = 'block';
+                }
+
+                if (said) {
+                    said.broadcastState(state, name || localStorage.getItem('user_name') || '');
+                }
+            };
+
+            let said = new SAID(() => ButtonDissabled(true), () => ButtonDissabled(false));
+            let sa = new SA(SA.START.A);
+            GetUserName(name => { said.postSAID(); Visio(sa.state, name); },
+                () => { sa.RunCommand(SA.COMMAND.SOU); said.postSAID(); Visio(sa.state); });
+
+            sa.on(SA.STATES.RV, (nextstates) => Registration(RName.value, RPass.value,
+                () => { sa.RunCommand(SA.COMMAND.SIN); said.postSAID(); Visio(sa.state, RName.value); },
+                () => { sa.RunCommand(SA.COMMAND.REJ); said.postSAID(); Visio(sa.state); })
+
+            );
+            sa.on(SA.STATES.SV, (nextstates) => SignIn(SName.value, SPass.value,
+                () => { sa.RunCommand(SA.COMMAND.LIN); said.postSAID(); Visio(sa.state, SName.value); },
+                () => { sa.RunCommand(SA.COMMAND.ADE); said.postSAID(); Visio(sa.state); })
+
+            );
+            NRegistration.onclick = () => { sa.RunCommand(SA.COMMAND.REG); said.postSAID(); Visio(sa.state); };
+            NSignIn.onclick = () => { sa.RunCommand(SA.COMMAND.SIN); said.postSAID(); Visio(sa.state); };
+            SSignIn.onclick = () => { sa.RunCommand(SA.COMMAND.SIN); said.postSAID(); Visio(sa.state, localStorage.getItem('user_name')); };
+            SCancel.onclick = () => { sa.RunCommand(SA.COMMAND.CAN); said.postSAID(); Visio(sa.state); };
+            RRegistration.onclick = () => { sa.RunCommand(SA.COMMAND.REG); said.postSAID(); Visio(sa.state); };
+            RCancel.onclick = () => { sa.RunCommand(SA.COMMAND.CAN); said.postSAID(); Visio(sa.state); };
+            ASignOut.onclick = () => { SignOut(() => { sa.RunCommand(SA.COMMAND.SOU); said.postSAID(); Visio(sa.state); }) };
+
+            console.log(sa);
+            window.syncAuthState = (state, userName) => {
+                console.log('Sync state:', state, userName);
+                if (sa && sa.state !== state) {
+                    sa.setState(state);
+                    Visio(state, userName);
+                }
+            };
+            window.addEventListener('beforeunload', () => said.close());
+
+        </script>
+</body>
+
+</html>

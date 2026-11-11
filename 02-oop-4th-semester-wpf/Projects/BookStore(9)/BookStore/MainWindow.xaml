@@ -1,0 +1,526 @@
+﻿<Window x:Class="BookStore.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:BookStore"
+        Cursor="/custom.cur"
+        Title="Книжный магазин" Height="750" Width="1100"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BackgroundBrush}"
+        Loaded="Window_Loaded"
+        x:Name="ThisWindow">
+
+    
+    <Window.CommandBindings>
+        <CommandBinding Command="local:BookCommands.ClearCartCommand"
+                        Executed="ClearCart_Executed"
+                        CanExecute="ClearCart_CanExecute"/>
+    </Window.CommandBindings>
+
+    <Window.Resources>
+        <local:ImagePathConverter x:Key="ImagePathConverter"/>
+
+        <local:BytesToImageConverter x:Key="ImageConverter"/>
+
+
+        <Style x:Key="SearchBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#333333"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#dddddd"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
+                    <Setter Property="Background" Value="#fff0f0"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Text.Length, ElementName=SearchBox}" Value="5">
+                    <Setter Property="Background" Value="#b1b3b1"/>
+                </DataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Text.Length, ElementName=SearchBox}" Value="5"/>
+                        <Condition Binding="{Binding IsFocused, ElementName=SearchBox}" Value="True"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Шапка с поиском -->
+        <Border x:Name="HeaderBorder" Grid.Row="0" Background="{DynamicResource HeaderBrush}" CornerRadius="10" Padding="15" Margin="0,0,0,10">
+            <StackPanel>
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock x:Name="TitleText" Text="{DynamicResource Title}" 
+                              FontSize="24" FontWeight="Bold" Foreground="White"
+                              VerticalAlignment="Center"/>
+                    
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Border Background="{DynamicResource HeaderButtonBrush}" CornerRadius="5" Margin="0,0,10,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="UserModeBtn" Content="{DynamicResource UserMode}" 
+                                       Style="{StaticResource WhiteButtonStyle}" Width="120"
+                                       Click="UserModeBtn_Click"/>
+                                <Button x:Name="AdminModeBtn" Content="{DynamicResource AdminMode}" 
+                                       Style="{StaticResource GreenButtonStyle}" Width="120"
+                                       Click="AdminModeBtn_Click"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="{DynamicResource HeaderButtonBrush}" CornerRadius="5" Margin="0,0,10,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="UndoBtn" Content="←" Style="{StaticResource WhiteButtonStyle}"
+                                       Width="40" Click="UndoBtn_Click" ToolTip="Отменить"/>
+                                <Button x:Name="RedoBtn" Content="→" Style="{StaticResource GreenButtonStyle}"
+                                       Width="40" Click="RedoBtn_Click" ToolTip="Повторить"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Button x:Name="AccountBtn" Content="Личный кабинет" Style="{StaticResource WhiteButtonStyle}"
+                               Width="128" Margin="0,0,10,0" Click="AccountBtn_Click" ToolTip="Личный кабинет"/>
+
+                        <Border Background="{DynamicResource HeaderButtonBrush}" CornerRadius="5">
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="RussianLangBtn" Content="RU" Style="{StaticResource WhiteButtonStyle}"
+                                       Width="50" Click="RussianLangBtn_Click"/>
+                                <Button x:Name="EnglishLangBtn" Content="EN" Style="{StaticResource GreenButtonStyle}"
+                                       Width="50" Click="EnglishLangBtn_Click"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+
+                <TextBox x:Name="SearchBox" Style="{StaticResource SearchBoxStyle}"
+                        Text="{DynamicResource SearchPlaceholder}"
+                        TextChanged="SearchBox_TextChanged" GotFocus="SearchBox_GotFocus"
+                        LostFocus="SearchBox_LostFocus" KeyDown="SearchBox_KeyDown"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Фильтры с кнопками переключения вида -->
+        <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" CornerRadius="10" 
+                Padding="15" Margin="0,0,0,10" BorderBrush="#dddddd" BorderThickness="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <ComboBox x:Name="CategoryFilter" SelectionChanged="Filter_Changed"
+                         Margin="0,0,10,0" Height="35">
+                    <ComboBoxItem Content="{DynamicResource AllCategories}"/>
+                    <ComboBoxItem Content="{DynamicResource Category_Romans}"/>
+                    <ComboBoxItem Content="{DynamicResource Category_Poetry}"/>
+                    <ComboBoxItem Content="{DynamicResource Category_Drama}"/>
+                    <ComboBoxItem Content="{DynamicResource Category_Fantasy}"/>
+                    <ComboBoxItem Content="{DynamicResource Category_Classic}"/>
+                </ComboBox>
+
+                <ComboBox x:Name="SortFilter" Grid.Column="1" SelectionChanged="Filter_Changed"
+                         Margin="0,0,10,0" Height="35">
+                    <ComboBoxItem Content="{DynamicResource Sort}"/>
+                    <ComboBoxItem Content="{DynamicResource PriceAsc}"/>
+                    <ComboBoxItem Content="{DynamicResource PriceDesc}"/>
+                    <ComboBoxItem Content="{DynamicResource ByName}"/>
+                </ComboBox>
+
+                <!-- <Button x:Name="ApplyFilterBtn" Grid.Column="2" Content="{DynamicResource Apply}" 
+                       Style="{StaticResource GreenButtonStyle}" Width="100" Height="35"/> -->
+
+                <Button x:Name="SwitchToListBtn" Grid.Column="3" Content="Список" 
+                       Style="{StaticResource GreenButtonStyle}" Width="80" Height="35" Margin="10,0,0,0"
+                       Click="SwitchToListBtn_Click"/>
+                <Button x:Name="SwitchToTileBtn" Grid.Column="4" Content="Плитка" 
+                       Style="{StaticResource WhiteButtonStyle}" Width="80" Height="35" Margin="5,0,0,0"
+                       Click="SwitchToTileBtn_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- Основной контент -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+                
+            </Grid.ColumnDefinitions>
+
+            <!-- Панель для переключения вида книг -->
+            <Grid Grid.Column="0">
+                <!-- Вид списком (ListView) -->
+                <ScrollViewer x:Name="ListViewPanel" VerticalScrollBarVisibility="Auto">
+                    <ListView x:Name="BooksListView" 
+                              Background="Transparent"
+                              BorderThickness="0"
+                              SelectionMode="Single"
+                              SelectionChanged="BooksListView_SelectionChanged"
+                              HorizontalContentAlignment="Stretch">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="10" 
+                                       Padding="15" Margin="0,0,0,10" BorderBrush="#dddddd" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.RowSpan="2" Width="60" Height="80" Background="#e8f0e8" 
+                                                CornerRadius="5" Margin="0,0,15,0" BorderBrush="{DynamicResource PrimaryBrush}"
+                                                BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Image Source="{Binding ImageBytes, Converter={StaticResource ImageConverter}}"
+                                                Width="58" Height="78" Stretch="UniformToFill" Margin="1"/>
+                                        </Border>   
+
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Title}" 
+                                                  FontSize="18" FontWeight="Bold" 
+                                                  Foreground="{DynamicResource TextPrimaryBrush}"
+                                                  Margin="0,0,0,5" TextWrapping="Wrap"/>
+
+                                        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Author}" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,15,0"/>
+                                            <TextBlock Text="{Binding Category}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        </StackPanel>
+
+                                        
+                                        <StackPanel Grid.Row="0" Grid.Column="2" Grid.RowSpan="2" 
+                                                   Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Price, StringFormat={}{0} BYN}" 
+                                                     FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"
+                                                     HorizontalAlignment="Right"/>
+                                            <Button Content="{DynamicResource Details}" Style="{StaticResource GreenButtonStyle}"
+                                                   Margin="0,5,0,0" Width="100" Click="ShowDetails_Click" CommandParameter="{Binding}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </ScrollViewer>
+
+                <!-- Вид плиткой (BookCardControl) -->
+                <ScrollViewer x:Name="TileViewPanel" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <WrapPanel x:Name="BooksWrapPanel" HorizontalAlignment="Center"/>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- Корзина -->
+            <Border Grid.Column="1" Background="{DynamicResource SurfaceBrush}" CornerRadius="10" 
+                   Padding="15" BorderBrush="#dddddd" BorderThickness="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock x:Name="CartTitle" Text="{DynamicResource Cart}" 
+                              FontSize="20" FontWeight="Bold" 
+                              Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,15"/>
+
+                    <ScrollViewer Grid.Row="1" Margin="0,0,0,15">
+                        <ItemsControl x:Name="CartListView">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#f5f5f5" CornerRadius="5" Padding="10" Margin="0,0,0,5">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Book.Title}" FontWeight="Bold" 
+                                                         Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                                    <TextBlock Text="{Binding Book.Price, StringFormat={}{0} BYN}" 
+                                                             Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,10,0"/>
+                                                    <TextBlock Text="x" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                                    <TextBlock Text="{Binding Quantity}" Foreground="{DynamicResource TextSecondaryBrush}" 
+                                                             Margin="5,0,0,0" FontWeight="Bold"/>
+                                                    <TextBlock Text="=" Foreground="{DynamicResource TextSecondaryBrush}" Margin="10,0,10,0"/>
+                                                    <TextBlock Text="{Binding TotalPrice, StringFormat={}{0} BYN}" 
+                                                             Foreground="{DynamicResource PrimaryBrush}" FontWeight="Bold"/>
+                                                </StackPanel>
+                                            </StackPanel>
+
+                                            <Button Grid.Column="1" Content="✖" Style="{StaticResource GreenButtonStyle}"
+                                                   Width="30" Height="30" Padding="0" Click="RemoveFromCart_Click"
+                                                   CommandParameter="{Binding Book.Id}" ToolTip="Удалить из корзины"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <StackPanel Grid.Row="2">
+                        <Separator Background="#dddddd" Height="2" Margin="0,0,0,10"/>
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="TotalText" Text="{DynamicResource Total}" 
+                                     FontSize="16" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock x:Name="TotalAmount" Grid.Column="1" Text="0 BYN" 
+                                     FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
+                        </Grid>
+                        <TextBlock Text="{Binding Cart.Count, StringFormat='Всего товаров: {0}'}" 
+                                  Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,5" HorizontalAlignment="Right"/>
+                        <Button x:Name="CheckoutBtn" Content="{DynamicResource Checkout}" 
+                               Style="{StaticResource GreenButtonStyle}" Height="40" Margin="0,0,0,5" Click="CheckoutBtn_Click"/>
+
+                        <Button Content="Очистить корзину (Ctrl+Delete)" 
+                                Command="local:BookCommands.ClearCartCommand"
+                                Style="{StaticResource WhiteButtonStyle}"
+                                Height="40"/>   
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Окно с подробной информацией -->
+        <Border x:Name="DetailsPopup" Grid.Row="2" Background="{DynamicResource SurfaceBrush}" CornerRadius="10" Padding="20"
+               Width="450" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"
+               BorderBrush="#dddddd" BorderThickness="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="DetailsTitle" FontSize="22" FontWeight="Bold" 
+                              Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <Button Grid.Column="1" Content="✖" Style="{StaticResource GreenButtonStyle}"
+                           Width="30" Height="30" Padding="0" Click="CloseDetails_Click"/>
+                </Grid>
+
+                <Border Grid.Row="1" Background="#f5f5f5" CornerRadius="5" Padding="15" Margin="0,0,0,15">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="DetailsAuthorLabel" Text="{DynamicResource Author}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <TextBlock x:Name="DetailsAuthor" Grid.Column="1" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="Bold"/>
+                        </Grid>
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="DetailsCategoryLabel" Text="{DynamicResource Category}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <TextBlock x:Name="DetailsCategory" Grid.Column="1" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="Bold"/>
+                        </Grid>
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="DetailsYearLabel" Text="{DynamicResource Year}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <TextBlock x:Name="DetailsYear" Grid.Column="1" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="Bold"/>
+                        </Grid>
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="DetailsPagesLabel" Text="{DynamicResource Pages}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <TextBlock x:Name="DetailsPages" Grid.Column="1" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="Bold"/>
+                        </Grid>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="DetailsPriceLabel" Text="{DynamicResource Price}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <TextBlock x:Name="DetailsPrice" Grid.Column="1" Foreground="{DynamicResource PrimaryBrush}" FontWeight="Bold" FontSize="18"/>
+                        </Grid>
+                        <TextBlock x:Name="DetailsDescription" TextWrapping="Wrap" Margin="0,10,0,0" 
+                                  Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </StackPanel>
+                </Border>
+
+                <Button x:Name="AddToCartFromDetails" Grid.Row="2" Content="{DynamicResource AddToCart}" 
+                       Style="{StaticResource GreenButtonStyle}" Height="40" FontSize="14" Click="AddToCartFromDetails_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- Админ панель -->
+        <Border x:Name="AdminPanel" Grid.Row="3" Background="{DynamicResource SurfaceBrush}" CornerRadius="10" 
+        Padding="15" Margin="0,10,0,0" BorderBrush="#dddddd" BorderThickness="1" Visibility="Collapsed">
+
+            <StackPanel>
+                <TextBlock Text="Просмотр таблиц:" FontWeight="SemiBold" Margin="0,0,0,5" HorizontalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,15">
+                    <Button Content="Книги" Click="NavBooks_Click" Width="120" Margin="5,0" Style="{StaticResource GreenButtonStyle}"/>
+                    <Button Content="Категории" Click="NavCategories_Click" Width="120" Margin="5,0" Style="{StaticResource GreenButtonStyle}"/>
+                    <Button Content="Заказы" Click="NavOrders_Click" Width="120" Margin="5,0" Style="{StaticResource GreenButtonStyle}"/>
+                </StackPanel>
+
+                <Separator Margin="0,5,0,15" Background="#eeeeee"/>
+
+                <TextBlock Text="Действия с записями:" FontWeight="SemiBold" Margin="0,0,0,5" HorizontalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="AddBookBtn" Content="{DynamicResource AddBook}" Style="{StaticResource GreenButtonStyle}"
+                    Width="150" Margin="0,0,10,0" Click="AddBookBtn_Click"/>
+                    <Button x:Name="EditBookBtn" Content="{DynamicResource EditBook}" Style="{StaticResource GreenButtonStyle}"
+                    Width="150" Margin="0,0,10,0" Click="EditBookBtn_Click"/>
+                    <Button x:Name="DeleteBookBtn" Content="{DynamicResource DeleteBook}" Style="{StaticResource GreenButtonStyle}"
+                    Width="150" Click="DeleteBookBtn_Click"/>
+                </StackPanel>
+
+                <DataGrid x:Name="MainDataGrid" AutoGenerateColumns="True" IsReadOnly="True" 
+                  MaxHeight="250" Margin="0,15,0,0" Visibility="Collapsed"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Диалог добавления/редактирования книги -->
+        <Border x:Name="BookDialog" 
+                Grid.Row="1" Grid.RowSpan="3"
+                Grid.ColumnSpan="2"
+                Background="White" 
+                CornerRadius="10" 
+                Padding="20"
+                Width="500"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Visibility="Collapsed"
+                BorderBrush="#dddddd"
+                BorderThickness="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock x:Name="DialogTitle" 
+                          Text="{DynamicResource AddTitle}" 
+                          FontSize="20" 
+                          FontWeight="Bold" 
+                          Foreground="#333333"
+                          Margin="0,0,0,15"/>
+
+                <Grid Grid.Row="1" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{DynamicResource TitleField}" Foreground="#333333" VerticalAlignment="Center"/>
+                    <TextBox x:Name="DialogTitleInput" Grid.Column="1"/>
+                </Grid>
+
+                <Grid Grid.Row="2" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{DynamicResource AuthorField}" Foreground="#333333" VerticalAlignment="Center"/>
+                    <TextBox x:Name="DialogAuthorInput" Grid.Column="1"/>
+                </Grid>
+
+                <Grid Grid.Row="3" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{DynamicResource CategoryField}" Foreground="#333333" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="DialogCategoryInput" Grid.Column="1">
+                        <ComboBoxItem Content="Выберите категорию"/>
+                        <ComboBoxItem Content="{DynamicResource Category_Romans}"/>
+                        <ComboBoxItem Content="{DynamicResource Category_Poetry}"/>
+                        <ComboBoxItem Content="{DynamicResource Category_Drama}"/>
+                        <ComboBoxItem Content="{DynamicResource Category_Fantasy}"/>
+                        <ComboBoxItem Content="{DynamicResource Category_Classic}"/>
+                    </ComboBox>
+                </Grid>
+
+                <Grid Grid.Row="4" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{DynamicResource YearField}" Foreground="#333333" VerticalAlignment="Center"/>
+                    <TextBox x:Name="DialogYearInput" Grid.Column="1"/>
+                </Grid>
+
+                <Grid Grid.Row="5" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{DynamicResource PagesField}" Foreground="#333333" VerticalAlignment="Center"/>
+                    <TextBox x:Name="DialogPagesInput" Grid.Column="1"/>
+                </Grid>
+
+                <Grid Grid.Row="6" Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{DynamicResource PriceField}" Foreground="#333333" VerticalAlignment="Center"/>
+                    <TextBox x:Name="DialogPriceInput" Grid.Column="1"/>
+                </Grid>
+
+                <StackPanel Margin="0,10">
+                    <TextBlock Text="Обложка:" Foreground="Gray" Margin="0,0,0,5"/>
+                    <Button x:Name="SelectImageBtn" 
+                            Content="Выбрать файл..." 
+                            Click="SelectImageBtn_Click" 
+                            Style="{StaticResource GreenButtonStyle}" 
+                            Width="150" 
+                            HorizontalAlignment="Left"/>
+                </StackPanel>
+                
+                <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="DialogSaveBtn" 
+                           Content="{DynamicResource Save}" 
+                           Style="{StaticResource GreenButtonStyle}"
+                           Width="100" Margin="0,0,10,0"
+                           Click="DialogSaveBtn_Click"/>
+                    <Button x:Name="DialogCancelBtn" 
+                           Content="{DynamicResource Cancel}" 
+                           Style="{StaticResource WhiteButtonStyle}"
+                           Width="100"
+                           Click="DialogCancelBtn_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

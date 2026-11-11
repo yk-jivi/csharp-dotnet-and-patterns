@@ -1,0 +1,52 @@
+﻿<UserControl x:Class="BookStore.BookCardControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:BookStore"
+             x:Name="Root">
+    
+
+    <UserControl.Resources>
+        <local:ImagePathConverter x:Key="ImagePathConverter"/>
+    </UserControl.Resources>
+
+    <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="10" Padding="10" Margin="5" 
+            BorderBrush="#dddddd" BorderThickness="1">
+        <StackPanel Width="200">
+            <Border Width="120" Height="160" Background="#e8f0e8" CornerRadius="5" 
+                    HorizontalAlignment="Center" Margin="0,0,0,10">
+                <Image Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}}" 
+                       Width="118" Height="158" Stretch="UniformToFill" Margin="1"/>
+            </Border>
+
+            <TextBlock Text="{Binding Title}" FontWeight="Bold" TextWrapping="Wrap" 
+                       TextAlignment="Center" Margin="0,5" Foreground="{DynamicResource TextPrimaryBrush}"/>
+            <TextBlock Text="{Binding Author}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" 
+                       TextAlignment="Center"/>
+            <TextBlock Text="{Binding Price, StringFormat={}{0} BYN}" Foreground="{DynamicResource PrimaryBrush}" 
+                       FontWeight="Bold" TextAlignment="Center" Margin="0,5"/>
+
+            <!-- Новый эл: рейтинг звездами -->
+            <local:StarRatingControl 
+                Rating="{Binding Rating}" 
+                Margin="0,5" 
+                HorizontalAlignment="Center"
+                RatingChanged="StarRating_RatingChanged"/>  
+
+            <!-- Новый эл: выбор количества -->
+            <local:NumberBox x:Name="QuantityBox" 
+                 Min="1" Max="10" Value="1" Margin="0,5" 
+                 HorizontalAlignment="Center"
+                 ValueChanged="NumberBox_ValueChanged"/>
+
+            <Button Content="В корзину" Click="AddToCart_Click" 
+                    Background="{DynamicResource PrimaryBrush}" Foreground="White" 
+                    Padding="10,5" Margin="0,5" Cursor="Hand" BorderThickness="0">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="5"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+        </StackPanel>
+    </Border>
+</UserControl>
